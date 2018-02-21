@@ -8,7 +8,8 @@ description: |
 
   In your snap's snapcraft.yaml add `after: [alsa]` to the part which will depend
   upon alsa, and add `alsa-launch` to your app's command. Remove any references
-  to `libasound2` and `libasound2-dev` from build- and stage-packages:
+  to `libasound2` and `libasound2-dev` from build- and stage-packages. You also
+  currently need to ensure the dependency chain by adding stub part definitions:
 
     apps:
       my-app:
@@ -16,6 +17,13 @@ description: |
         plugs: [...]
 
     parts:
+      # Sub parts for alsa and alsa-plugins
+      alsa:
+        after: [alsa-lib, alsa-plugins]
+      alsa-plugins:
+        after: [alsa-lib]
+      
+      # Your app here
       depends-on-alsa:
         after: [alsa, desktop-glib-only]
         plugin: nil
@@ -78,7 +86,7 @@ parts:
 
   alsa:
     plugin: nil
-    after: [alsa-plugins, alsa-lib]
+    #after: [alsa-plugins, alsa-lib]
     prepare: |
       cat > alsa.conf <<EOF
       pcm.!default {
