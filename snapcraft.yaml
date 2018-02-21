@@ -58,7 +58,7 @@ parts:
     - -usr/share/alsa/topology/broadwell
 
   alsa-plugins:
-    after: [alsa-lib]
+    # after: [alsa-lib]
     plugin: autotools
     source: http://archive.ubuntu.com/ubuntu/pool/main/a/alsa-plugins/alsa-plugins_1.1.1.orig.tar.bz2
     # source: ftp://ftp.alsa-project.org/pub/plugins/alsa-plugins-1.1.5.tar.bz2
@@ -86,7 +86,7 @@ parts:
 
   alsa:
     plugin: nil
-    #after: [alsa-plugins, alsa-lib]
+    # after: [alsa-plugins, alsa-lib]
     prepare: |
       cat > alsa.conf <<EOF
       pcm.!default {
