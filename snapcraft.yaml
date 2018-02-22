@@ -46,16 +46,14 @@ parts:
     - --disable-static
     organize:
       snap/*/current/usr/lib/*: usr/lib/
+      snap/*/current/usr/share/*: usr/share/
     stage:
     - usr/include
     - usr/lib
+    - usr/share/alsa
     prime:
-    - -usr/bin
-    - -usr/include
+    - -usr/lib/*.la
     - -usr/lib/pkgconfig
-    - -usr/share/alsa/alsa.conf
-    - -usr/share/alsa/pcm
-    - -usr/share/alsa/topology/broadwell
 
   alsa-plugins:
     # after: [alsa-lib]
@@ -77,8 +75,11 @@ parts:
     organize:
       snap/*/current/usr/lib/*: usr/lib/
     stage:
+    - lib
     - usr/lib
     - usr/share/alsa
+    prime:
+    - -usr/lib/alsa-lib/*.la
     build-packages:
     - libpulse-dev
     stage-packages:
