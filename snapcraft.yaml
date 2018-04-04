@@ -33,7 +33,8 @@ description: |
 parts:
   alsa-lib:
     plugin: autotools
-    source: http://archive.ubuntu.com/ubuntu/pool/main/a/alsa-lib/alsa-lib_1.1.3.orig.tar.bz2
+    source: git://git.alsa-project.org/alsa-lib.git
+    source-tag: 'v1.1.5'
     # source: ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.5.tar.bz2
     configflags:
     - --prefix=/usr
@@ -43,7 +44,15 @@ parts:
     - --localstatedir=/var
     - --with-configdir=/snap/$SNAPCRAFT_PROJECT_NAME/current/usr/share/alsa
     - --with-plugindir=/snap/$SNAPCRAFT_PROJECT_NAME/current/usr/lib/alsa-lib
+    - --disable-alisp
+    - --disable-aload
+    - --disable-mixer
+    - --disable-python
+    - --disable-rawmidi
     - --disable-static
+    - --disable-topology
+    - --disable-ucm
+    - --enable-symbolic-functions
     organize:
       snap/*/current/usr/lib/*: usr/lib/
       snap/*/current/usr/share/*: usr/share/
@@ -58,7 +67,8 @@ parts:
   alsa-plugins:
     # after: [alsa-lib]
     plugin: autotools
-    source: http://archive.ubuntu.com/ubuntu/pool/main/a/alsa-plugins/alsa-plugins_1.1.1.orig.tar.bz2
+    source: git://git.alsa-project.org/alsa-plugins.git
+    source-tag: 'v1.1.5'
     # source: ftp://ftp.alsa-project.org/pub/plugins/alsa-plugins-1.1.5.tar.bz2
     configflags:
     - --prefix=/usr
@@ -66,12 +76,15 @@ parts:
     - --libexec=/usr/lib
     - --libdir=/usr/lib
     - --localstatedir=/var
-    - --disable-oss
-    - --disable-usbstream
     - --disable-arcamav
     - --disable-avcodec
+    - --disable-jack
+    - --disable-mix
+    - --disable-oss
+    - --disable-usbstream
     - --with-plugindir=/snap/$SNAPCRAFT_PROJECT_NAME/current/usr/lib/alsa-lib
     - --disable-static
+    - LDFLAGS=-L$SNAPCRAFT_STAGE/usr/lib
     organize:
       snap/*/current/usr/lib/*: usr/lib/
     stage:
