@@ -136,3 +136,13 @@ parts:
     install: |
       install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc alsa.conf
       install -m755 -D -t $SNAPCRAFT_PART_INSTALL/bin alsa-launch
+
+  alsa-chain-test:
+    after: [alsa, alsa-lib-chain-test, alsa-plugins-chain-test]
+    plugin: nil
+  alsa-lib-chain-test:
+    after: [alsa-lib]
+    plugin: nil
+  alsa-plugins-chain-test:
+    after: [alsa-lib-chain-test, alsa-plugins]
+    plugin: nil
