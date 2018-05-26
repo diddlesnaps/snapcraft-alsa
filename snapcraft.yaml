@@ -33,9 +33,7 @@ description: |
 parts:
   alsa-lib:
     plugin: autotools
-    source: git://git.alsa-project.org/alsa-lib.git
-    source-tag: 'v1.1.5'
-    # source: ftp://ftp.alsa-project.org/pub/lib/alsa-lib-1.1.5.tar.bz2
+    source: https://mirrorservice.org/sites/ftp.alsa-project.org/pub/lib/alsa-lib-1.1.6.tar.bz2
     configflags:
     - --prefix=/usr
     - --sysconfdir=/etc
@@ -46,13 +44,17 @@ parts:
     - --with-plugindir=/snap/$SNAPCRAFT_PROJECT_NAME/current/usr/lib/alsa-lib
     - --disable-alisp
     - --disable-aload
-    - --disable-mixer
     - --disable-python
     - --disable-rawmidi
     - --disable-static
     - --disable-topology
     - --disable-ucm
     - --enable-symbolic-functions
+    install: |
+      for pcfile in $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/local/lib/\$SNAPCRAFT_ARCH_TRIPLET/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/local/lib/pkgconfig/*.pc; do
+        sed -i -E "s~^((include|lib)dir=)/usr(/local)?~\1\${prefix}~g" $pcfile || true
+        sed -i -E "s~^((exec_)?prefix=)(/usr(/local)?)~\1/\3~" \$pcfile || true
+      done
     organize:
       snap/*/current/usr/lib/*: usr/lib/
       snap/*/current/usr/share/*: usr/share/
@@ -61,15 +63,15 @@ parts:
     - usr/lib
     - usr/share/alsa
     prime:
-    - -usr/lib/*.la
-    - -usr/lib/pkgconfig
+    - -**/*.a
+    - -**/*.la
+    - -**/pkgconfig/
+    - -usr/include
 
   alsa-plugins:
     # after: [alsa-lib]
     plugin: autotools
-    source: git://git.alsa-project.org/alsa-plugins.git
-    source-tag: 'v1.1.5'
-    # source: ftp://ftp.alsa-project.org/pub/plugins/alsa-plugins-1.1.5.tar.bz2
+    source: https://mirrorservice.org/sites/ftp.alsa-project.org/pub/plugins/alsa-plugins-1.1.6.tar.bz2
     configflags:
     - --prefix=/usr
     - --sysconfdir=/etc
@@ -92,7 +94,10 @@ parts:
     - usr/lib
     - usr/share/alsa
     prime:
-    - -usr/lib/alsa-lib/*.la
+    - -**/*.a
+    - -**/*.la
+    - -**/pkgconfig/
+    - -usr/include
     build-packages:
     - libpulse-dev
     stage-packages:
@@ -121,7 +126,7 @@ parts:
       cat > alsa-launch <<EOF
       #!/bin/bash
       if [ "\$SNAP_ARCH" == "amd64" ]; then
-        ARCH="amd64-linux-gnu"
+        ARCH="x86_64-linux-gnu"
       elif [ "\$SNAP_ARCH" == "armhf" ]; then
         ARCH="arm-linux-gnueabihf"
       elif [ "\$SNAP_ARCH" == "arm64" ]; then
