@@ -106,7 +106,7 @@ parts:
   alsa:
     plugin: nil
     # after: [alsa-plugins, alsa-lib]
-    prepare: |
+    override-pull: |
       cat > alsa.conf <<EOF
       pcm.!default {
         type pulse
@@ -138,7 +138,8 @@ parts:
       export ALSA_CONFIG_PATH="\$SNAP/etc/alsa.conf"
       exec "\$@"
       EOF
-    install: |
+
+    override-build: |
       install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc alsa.conf
       install -m755 -D -t $SNAPCRAFT_PART_INSTALL/bin alsa-launch
 
