@@ -50,10 +50,12 @@ parts:
     - --disable-topology
     - --disable-ucm
     - --enable-symbolic-functions
-    install: |
-      for pcfile in $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/local/lib/\$SNAPCRAFT_ARCH_TRIPLET/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/local/lib/pkgconfig/*.pc; do
+    override-build: |
+      snapcraftctl build
+
+      for pcfile in $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/*.pc; do
         sed -i -E "s~^((include|lib)dir=)/usr(/local)?~\1\${prefix}~g" $pcfile || true
-        sed -i -E "s~^((exec_)?prefix=)(/usr(/local)?)~\1/\3~" \$pcfile || true
+        sed -i -E "s~^((exec_)?prefix=)(/usr(/local)?)~\1/\3~" $pcfile || true
       done
     organize:
       snap/*/current/usr/lib/*: usr/lib/
