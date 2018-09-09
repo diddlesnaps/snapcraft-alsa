@@ -50,7 +50,8 @@ parts:
     - --disable-topology
     - --disable-ucm
     - --enable-symbolic-functions
-    install: |
+    override-build: |
+      snapcraftctl build
       for pcfile in $SNAPCRAFT_PART_INSTALL/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/lib/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/local/lib/\$SNAPCRAFT_ARCH_TRIPLET/pkgconfig/*.pc $SNAPCRAFT_PART_INSTALL/usr/local/lib/pkgconfig/*.pc; do
         sed -i -E "s~^((include|lib)dir=)/usr(/local)?~\1\${prefix}~g" $pcfile || true
         sed -i -E "s~^((exec_)?prefix=)(/usr(/local)?)~\1/\3~" \$pcfile || true
@@ -63,10 +64,9 @@ parts:
     - usr/lib
     - usr/share/alsa
     prime:
-    - -**/*.a
-    - -**/*.la
-    - -**/pkgconfig/
-    - -usr/include
+    - usr/lib/*.so
+    - usr/lib/*.so.*
+    - usr/share/alsa
 
   alsa-plugins:
     # after: [alsa-lib]
@@ -94,10 +94,9 @@ parts:
     - usr/lib
     - usr/share/alsa
     prime:
-    - -**/*.a
-    - -**/*.la
-    - -**/pkgconfig/
-    - -usr/include
+    - lib
+    - usr/lib
+    - usr/share/alsa
     build-packages:
     - libpulse-dev
     stage-packages:
@@ -106,7 +105,7 @@ parts:
   alsa:
     plugin: nil
     # after: [alsa-plugins, alsa-lib]
-    prepare: |
+    override-pull: |
       cat > alsa.conf <<EOF
       pcm.!default {
         type pulse
@@ -136,9 +135,18 @@ parts:
       fi
       export LD_LIBRARY_PATH="\$SNAP/usr/lib/alsa-lib:\$SNAP/usr/lib/\$ARCH/pulseaudio:\$LD_LIBRARY_PATH"
       export ALSA_CONFIG_PATH="\$SNAP/etc/alsa.conf"
+      # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
+      if [ -n "$XDG_RUNTIME_DIR" ]; then
+          pulsenative="pulse/native"
+          pulseaudio_sockpath="$XDG_RUNTIME_DIR/../$pulsenative"
+          if [ -S "$pulseaudio_sockpath" ]; then
+              export PULSE_SERVER="unix:${pulseaudio_sockpath}"
+          fi
+      fi
       exec "\$@"
       EOF
-    install: |
+    override-build: |
+      snapcraftctl build
       install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc alsa.conf
       install -m755 -D -t $SNAPCRAFT_PART_INSTALL/bin alsa-launch
 
