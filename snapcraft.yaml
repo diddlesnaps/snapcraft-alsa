@@ -105,6 +105,7 @@ parts:
 
   alsa:
     plugin: nil
+    source: https://github.com/diddledan/snapcraft-alsa.git
     # after: [alsa-plugins, alsa-lib]
     override-pull: |
       cat > alsa.conf <<EOF
