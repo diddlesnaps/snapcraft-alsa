@@ -41,9 +41,8 @@ parts:
     - --disable-ucm
     - --enable-symbolic-functions
   alsa-plugins:
-    # configflags needed until LP#1766878 is fixed
-    configflags:
     after: [alsa-lib]
+    # configflags needed until LP#1766878 is fixed
     configflags:
     - --prefix=/usr
     - --sysconfdir=/etc
