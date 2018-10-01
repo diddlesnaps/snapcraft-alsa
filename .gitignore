@@ -1,0 +1,9 @@
+/parts/
+/stage/
+/prime/
+
+/snap/.snapcraft/
+
+*.snap
+
+*_source.tar.bz2
