@@ -172,11 +172,11 @@ parts:
       export LD_LIBRARY_PATH="\$SNAP/usr/lib/alsa-lib:\$SNAP/usr/lib/\$ARCH/pulseaudio:\$LD_LIBRARY_PATH"
       export ALSA_CONFIG_PATH="\$SNAP/etc/alsa.conf"
       # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
-      if [ -n "$XDG_RUNTIME_DIR" ]; then
+      if [ -n "\$XDG_RUNTIME_DIR" ]; then
           pulsenative="pulse/native"
-          pulseaudio_sockpath="$XDG_RUNTIME_DIR/../$pulsenative"
-          if [ -S "$pulseaudio_sockpath" ]; then
-              export PULSE_SERVER="unix:${pulseaudio_sockpath}"
+          pulseaudio_sockpath="\$XDG_RUNTIME_DIR/../\$pulsenative"
+          if [ -S "\$pulseaudio_sockpath" ]; then
+              export PULSE_SERVER="unix:\${pulseaudio_sockpath}"
           fi
       fi
       exec "\$@"
