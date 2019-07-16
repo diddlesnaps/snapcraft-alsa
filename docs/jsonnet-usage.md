@@ -1,4 +1,4 @@
-# Adding snapcraft-alsa to your snapcraft-jsonnet configuration
+# Adding snapcraft-alsa to your sc-jsonnet configuration
 
 I have been working on improving the sharing of snippets of
 snapcraft.yaml code with a tool I found called
