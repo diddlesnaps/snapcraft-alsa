@@ -49,5 +49,5 @@ file locally. To use a commit hash, try the following address,
 which is for the latest commit as of writing this document:
 
 ```jsonnet
-local alsa = import 'https://raw.githubusercontent.com/diddlesnaps/snapcraft-alsa/00c5311/alsa.libsonnet';
+local alsa = import 'https://raw.githubusercontent.com/diddlesnaps/snapcraft-alsa/cfbd336/alsa.libsonnet';
 ```
