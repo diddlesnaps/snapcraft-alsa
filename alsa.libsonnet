@@ -2,17 +2,25 @@
     apply(version=""):: {
         local filterParts(name, part) = (
             if version == "" then part
-            else {
-                "build-packages": std.filter(
-                    function(package) (package != "libasound2-dev"),
-                    part["build-packages"]
+            else part + {
+                "build-packages": (
+                    if std.objectHas(part, 'build-packages') then
+                        std.filter(
+                            function(package) (package != "libasound2-dev"),
+                            part["build-packages"]
+                        )
+                    else []
                 ),
-                "stage-packages": std.filter(
-                    function(package) (
-                        package != "libasound2" &&
-                        package != "libasound2-plugins"
-                    ),
-                    part["stage-packages"],
+                "stage-packages": (
+                    if std.objectHas(part, 'stage-packages') then
+                        std.filter(
+                            function(package) (
+                                package != "libasound2" &&
+                                package != "libasound2-plugins"
+                            ),
+                            part["stage-packages"]
+                        )
+                    else []
                 ),
             }
         ),
