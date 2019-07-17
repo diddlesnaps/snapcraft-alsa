@@ -24,7 +24,24 @@ snapcraft {
             plugin: "nil",
         },
     },
-} + alsa
+} + alsa.apply()
+```
+
+You can also supply a version number to build a specific version of alsa, which will download and compile the version of alsa you specify. It will also try to remove any references to `libasound2` and `libasound2-plugins` from previously defined parts:
+
+```jsonnet
+local snapcraft = import 'snapcraft.libsonnet';
+local alsa = import 'https://raw.githubusercontent.com/diddlesnaps/snapcraft-alsa/master/alsa.libsonnet';
+
+snapcraft {
+    name: "my-super-snap",
+    version: "0.1",
+    parts: {
+        mypart: {
+            plugin: "nil",
+        },
+    },
+} + alsa.apply("1.1.9")
 ```
 
 Ideally you would choose a commit hash for the address or copy the
