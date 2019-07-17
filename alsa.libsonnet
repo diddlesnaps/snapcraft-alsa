@@ -16,12 +16,13 @@
                 ),
             }
         ),
-        parts: std.mapWithKey(filterParts, super.parts)
-         + {
-            "alsa-mixin"+: {
-                source: "https://github.com/diddledan/snapcraft-alsa.git",
-                plugin: "nil",
-                "override-pull": "
+        parts: (
+            if std.length(super.parts) > 0 then
+                std.mapWithKey(filterParts, super.parts) {
+                    "alsa-mixin"+: {
+                        source: "https://github.com/diddledan/snapcraft-alsa.git",
+                        plugin: "nil",
+                        "override-pull": "
 cat > asound.conf <<EOF
 pcm.!default {
     type pulse
@@ -36,24 +37,27 @@ ctl.!default {
     fallback \"sysdefault\"
 }
 EOF",
-                "override-build": "install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc asound.conf",
-                "build-packages"+: (
-                    if version == "" then [
-                        "libasound2-dev"
-                    ]
-                ),
-                "stage-packages"+: (
-                    if version == "" then [
-                        "libasound2",
-                        "libasound2-plugins",
-                    ]
-                ),
-            } + (
-                if version != "" then {
-                    after: ["alsa-lib-mixin", "alsa-plugins-mixin"],
+                        "override-build": "install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc asound.conf",
+                        "build-packages"+: (
+                            if version == "" then [
+                                "libasound2-dev"
+                            ] else []
+                        ),
+                        "stage-packages"+: (
+                            if version == "" then [
+                                "libasound2",
+                                "libasound2-plugins",
+                            ] else []
+                        ),
+                        after: (
+                            if version != "" then
+                                ["alsa-lib-mixin", "alsa-plugins-mixin"]
+                            else []
+                        ),
+                    },
                 }
-            ),
-        } + (
+            else {}
+        ) + (
             if version != "" then {
                 "alsa-lib-mixin": {
                     plugin: "autotools",
@@ -76,7 +80,7 @@ EOF",
                         "libpulse0",
                     ],
                 },
-            }
+            } else {}
         ),
         layout+: {
             "/etc/asound.conf": {
