@@ -1,6 +1,6 @@
 {
     apply(version=""):: {
-        local filterParts(name, part) = (
+        local updateParts(name, part) = (
             if version == "" then part
             else part + {
                 "build-packages": (
@@ -22,11 +22,17 @@
                         )
                     else []
                 ),
+                stage+: [
+                    "-usr/share/alsa",
+                    "-usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib",
+                    "-usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libasound*"
+                ],
+                after+: ["alsa-mixin", "alsa-lib-mixin", "alsa-plugins-mixin"],
             }
         ),
         parts: (
             if std.length(super.parts) > 0 then
-                std.mapWithKey(filterParts, super.parts) {
+                std.mapWithKey(updateParts, super.parts) {
                     "alsa-mixin"+: {
                         source: "https://github.com/diddledan/snapcraft-alsa.git",
                         plugin: "nil",
