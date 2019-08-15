@@ -1,7 +1,7 @@
 {
     apply(version=""):: {
         apps: (
-            if std.length(super.apps) > 0 then
+            if "apps" in super then
                 std.mapWithKey(function(name, app) (
                     app + {
                         "command-chain": std.setUnion((
@@ -19,7 +19,7 @@
             else {}
         ),
         parts: (
-            if std.length(super.parts) > 0 then
+            if "parts" in super then
                 std.mapWithKey(function(name, part) (
                     part + {
                         "build-packages": (
@@ -56,11 +56,13 @@
                             else []
                         ), ["alsa-mixin"]),
                     }
-                ), super.parts) {
-                    "alsa-mixin"+: {
-                        source: "https://github.com/diddledan/snapcraft-alsa.git",
-                        plugin: "nil",
-                        "override-pull": "
+                ), super.parts)
+            else {}
+        ) + {
+            "alsa-mixin": {
+                source: "https://github.com/diddledan/snapcraft-alsa.git",
+                plugin: "nil",
+                "override-pull": "
 cat > asound.conf <<EOF
 pcm.!default {
     type pulse
@@ -82,7 +84,7 @@ function append_dir() {
   local var=\"\\$1\"
   local dir=\"\\$2\"
   if [ -d \"\\$dir\" ]; then
-    eval \"export $var=\\\"\\$dir\\${$var:+:\\$$var}\\\"\"
+    eval \"export \\$var=\\\"\\\\$dir\\${\\$var:+:\\\\$\\$var}\\\"\"
   fi
 }
 
@@ -112,26 +114,24 @@ chmod +x alsa-launch
 install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc asound.conf
 install -m755 -D -t $SNAPCRAFT_PART_INSTALL/snap/command-chain alsa-launch
 ",
-                        "build-packages"+: (
-                            if version == "" then [
-                                "libasound2-dev"
-                            ] else []
-                        ),
-                        "stage-packages"+: (
-                            if version == "" then [
-                                "libasound2",
-                                "libasound2-plugins",
-                            ] else []
-                        ),
-                        after: (
-                            if version != "" then
-                                ["alsa-lib-mixin", "alsa-plugins-mixin"]
-                            else []
-                        ),
-                    },
-                }
-            else {}
-        ) + (
+                "build-packages"+: (
+                    if version == "" then [
+                        "libasound2-dev"
+                    ] else []
+                ),
+                "stage-packages"+: (
+                    if version == "" then [
+                        "libasound2",
+                        "libasound2-plugins",
+                    ] else []
+                ),
+                after: (
+                    if version != "" then
+                        ["alsa-lib-mixin", "alsa-plugins-mixin"]
+                    else []
+                ),
+            },
+        } + (
             if version != "" then {
                 "alsa-lib-mixin": {
                     plugin: "autotools",
