@@ -51,7 +51,7 @@ To use Ubuntu's ALSA, copy the following part into your
                     fi
                 }
 
-                export ALSA_CONFIG_PATH="$SNAP/etc/asound.conf"
+                export ALSA_CONFIG_PATH="\$SNAP/etc/asound.conf"
 
                 if [ -d "\$SNAP/usr/lib/alsa-lib" ]; then
                     append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/alsa-lib"
