@@ -21,66 +21,65 @@ To use Ubuntu's ALSA, copy the following part into your
 .. code-block:: yaml
 
     parts:
-        alsa-mixin:
-            source: https://github.com/diddledan/snapcraft-alsa.git
-            plugin: nil
-            override-pull: |
-                cat > asound.conf <<EOF
-                pcm.!default {
-                    type pulse
-                    fallback "sysdefault"
-                    hint {
-                        show on
-                        description "Default ALSA Output (currently PulseAudio Sound Server)"
-                    }
-                }
-                ctl.!default {
-                    type pulse
-                    fallback "sysdefault"
-                }
-                EOF
+      alsa-mixin:
+        plugin: nil
+        source: https://github.com/diddlesnaps/snapcraft-alsa.git
+        override-pull: |
+          cat > asound.conf <<EOF
+          pcm.!default {
+              type pulse
+              fallback "sysdefault"
+              hint {
+                  show on
+                  description "Default ALSA Output (currently PulseAudio Sound Server)"
+              }
+          }
+          ctl.!default {
+              type pulse
+              fallback "sysdefault"
+          }
+          EOF
+          cat > alsa-launch <<EOF
+          #!/bin/bash
 
-                cat > alsa-launch <<EOF
-                #!/bin/sh
+          function append_dir() {
+            local var="\$1"
+            local dir="\$2"
+            if [ -d "\$dir" ]; then
+              eval "export \$var=\"\\\$dir\${\$var:+:\\\$\$var}\""
+            fi
+          }
 
-                function append_dir() {
-                    local var="\$1"
-                    local dir="\$2"
-                    if [ -d "\$dir" ]; then
-                    eval "export \$var=\"\${\$var:+\$\$var:}\$dir\""
-                    fi
-                }
+          export ALSA_CONFIG_PATH="\$SNAP/etc/asound.conf"
 
-                export ALSA_CONFIG_PATH="\$SNAP/etc/asound.conf"
+          if [ -d "\$SNAP/usr/lib/alsa-lib" ]; then
+              append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/alsa-lib"
+          elif [ -d "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib" ]; then
+              append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib"
+          fi
+          append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio"
 
-                if [ -d "\$SNAP/usr/lib/alsa-lib" ]; then
-                    append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/alsa-lib"
-                elif [ -d "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib" ]; then
-                    append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib"
-                fi
-                append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio"
+          # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
+          if [ -n "\$XDG_RUNTIME_DIR" ]; then
+              pulsenative="pulse/native"
+              pulseaudio_sockpath="\$XDG_RUNTIME_DIR/../\$pulsenative"
+              if [ -S "\$pulseaudio_sockpath" ]; then
+                  export PULSE_SERVER="unix:\${pulseaudio_sockpath}"
+              fi
+          fi
 
-                # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
-                if [ -n "\$XDG_RUNTIME_DIR" ]; then
-                    pulsenative="pulse/native"
-                    pulseaudio_sockpath="\$XDG_RUNTIME_DIR/../\$pulsenative"
-                    if [ -S "\$pulseaudio_sockpath" ]; then
-                        export PULSE_SERVER="unix:\${pulseaudio_sockpath}"
-                    fi
-                fi
-
-                exec "\$@"
-                EOF
-                chmod +x alsa-launch
-            override-build: |
-                snapcraftctl build
-                install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc asound.conf
-                install -m755 -D -t $SNAPCRAFT_PART_INSTALL/snap/command-chain alsa-launch
-            build-packages:
-                - libasound2-dev
-            stage-packages:
-                - libasound2
-                - libasound2-plugins
+          exec "\$@"
+          EOF
+          chmod +x alsa-launch
+        override-build: |
+          snapcraftctl build
+          install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc asound.conf
+          install -m755 -D -t $SNAPCRAFT_PART_INSTALL/snap/command-chain alsa-launch
+        build-packages:
+          - libasound2-dev
+        stage-packages:
+          - libasound2
+          - libasound2-plugins
 
 Finally, add `after: [alsa-mixin]` to any parts that require ALSA, and add `snap/command-chain/alsa-launch` to the command chain of any apps that need to use the sound system e.g. `command-chain: ["snap/command-chain/alsa-launch"]` .
 

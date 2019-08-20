@@ -1,5 +1,19 @@
 {
     apply(version=""):: {
+        layout+: (
+            if version == "" then
+                {
+                    "/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib": {
+                        bind: "$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib"
+                    },
+                }
+            else
+                {
+                    "/usr/lib/alsa-lib": {
+                        bind: "$SNAP/usr/lib/alsa-lib"
+                    },
+                }
+        ),
         apps: (
             if "apps" in super then
                 std.mapWithKey(function(name, app) (
