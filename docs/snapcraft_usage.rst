@@ -46,7 +46,7 @@ To use Ubuntu's ALSA, copy the following part into your
             local var="\$1"
             local dir="\$2"
             if [ -d "\$dir" ]; then
-              eval "export \$var=\"\\\$dir\${\$var:+:\\\$\$var}\""
+              eval "export \$var=\"\\\${\$var:+:\\\$\$var}\\\$dir\""
             fi
           }
 

@@ -46,7 +46,7 @@ description: |
             local var="\$1"
             local dir="\$2"
             if [ -d "\$dir" ]; then
-              eval "export \$var=\"\\\$dir\${\$var:+:\\\$\$var}\""
+              eval "export \$var=\"\\\${\$var:+:\\\$\$var}\\\$dir\""
             fi
           }
 
@@ -70,6 +70,7 @@ description: |
 
           exec "\$@"
           EOF
+
           chmod +x alsa-launch
         override-build: |
           snapcraftctl build
