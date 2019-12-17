@@ -93,23 +93,14 @@ ctl.!default {
 EOF
 cat > alsa-launch <<EOF
 #!/bin/bash
-
-function append_dir() {
-  local var=\"\\$1\"
-  local dir=\"\\$2\"
-  if [ -d \"\\$dir\" ]; then
-    eval \"export \\$var=\\\"\\\\\\${\\$var:+:\\\\\\$\\$var}\\\\\\$dir\\\"\"
-  fi
-}
-
 export ALSA_CONFIG_PATH=\"\\$SNAP/etc/asound.conf\"
 
 if [ -d \"\\$SNAP/usr/lib/alsa-lib\" ]; then
-    append_dir LD_LIBRARY_PATH \"\\$SNAP/usr/lib/alsa-lib\"
+    export LD_LIBRARY_PATH=\"\\$LD_LIBRARY_PATH:\\$SNAP/usr/lib/alsa-lib\"
 elif [ -d \"\\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib\" ]; then
-    append_dir LD_LIBRARY_PATH \"\\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib\"
+    export LD_LIBRARY_PATH=\"\\$LD_LIBRARY_PATH:\\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib\"
 fi
-append_dir LD_LIBRARY_PATH \"\\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio\"
+export LD_LIBRARY_PATH=\"\\$LD_LIBRARY_PATH\\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio\"
 
 # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
 if [ -n \"\\$XDG_RUNTIME_DIR\" ]; then
