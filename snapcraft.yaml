@@ -81,7 +81,7 @@ description: |
         ...
 
 parts:
-  alsa:
+  alsa-mixin:
     plugin: nil
     source: https://github.com/diddlesnaps/snapcraft-alsa.git
     override-pull: |
@@ -101,24 +101,13 @@ parts:
       EOF
       cat > alsa-launch <<EOF
       #!/bin/bash
-
-      function append_dir() {
-        local var="\$1"
-        local dir="\$2"
-        if [ -d "\$dir" ]; then
-          eval "export \$var=\"\\\$dir\${\$var:+:\\\$\$var}\""
-        fi
-      }
-
       export ALSA_CONFIG_PATH="\$SNAP/etc/asound.conf"
-
       if [ -d "\$SNAP/usr/lib/alsa-lib" ]; then
-          append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/alsa-lib"
+          export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SNAP/usr/lib/alsa-lib"
       elif [ -d "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib" ]; then
-          append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib"
+          export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib"
       fi
-      append_dir LD_LIBRARY_PATH "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio"
-
+      export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio"
       # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
       if [ -n "\$XDG_RUNTIME_DIR" ]; then
           pulsenative="pulse/native"
@@ -127,7 +116,6 @@ parts:
               export PULSE_SERVER="unix:\${pulseaudio_sockpath}"
           fi
       fi
-
       exec "\$@"
       EOF
       chmod +x alsa-launch
@@ -140,4 +128,3 @@ parts:
     stage-packages:
       - libasound2
       - libasound2-plugins
-
