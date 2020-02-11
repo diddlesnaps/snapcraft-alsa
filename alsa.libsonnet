@@ -115,51 +115,39 @@ exec \"\\$@\"
 EOF
 chmod +x alsa-launch
 ",
-                        "override-build": "
+                "override-build": "
 install -m644 -D -t $SNAPCRAFT_PART_INSTALL/etc asound.conf
 install -m755 -D -t $SNAPCRAFT_PART_INSTALL/snap/command-chain alsa-launch
 ",
                 "build-packages"+: (
-                    if version == "" then [
-                        "libasound2-dev"
-                    ] else []
-                ),
-                "stage-packages"+: (
-                    if version == "" then [
-                        "libasound2",
-                        "libasound2-plugins",
-                    ] else []
-                ),
-                after: (
-                    if version != "" then
-                        ["alsa-lib-mixin", "alsa-plugins-mixin"]
+                    if version == "" then ["libasound2-dev"]
                     else []
                 ),
+                "stage-packages"+: (
+                    if version == "" then ["libasound2", "libasound2-plugins"]
+                    else []
+                ),
+                after: (
+                    if version == "" then []
+                    else ["alsa-lib-mixin", "alsa-plugins-mixin"]
+                )
             },
         } + (
             if version != "" then {
                 "alsa-lib-mixin": {
                     plugin: "autotools",
                     source: "https://www.alsa-project.org/files/pub/lib/alsa-lib-" + version + ".tar.bz2",
-                    configflags: [
-                        "--prefix=/usr"
-                    ],
+                    configflags: ["--prefix=/usr"],
                 },
                 "alsa-plugins-mixin": {
                     after: ["alsa-lib-mixin"],
                     plugin: "autotools",
                     source: "https://www.alsa-project.org/files/pub/plugins/alsa-plugins-" + version + ".tar.bz2",
-                    configflags: [
-                        "--prefix=/usr"
-                    ],
-                    "build-packages": [
-                        "libpulse-dev",
-                    ],
-                    "stage-packages": [
-                        "libpulse0",
-                    ],
+                    configflags: ["--prefix=/usr"],
+                    "build-packages": ["libpulse-dev"],
+                    "stage-packages": ["libpulse0"],
                 },
             } else {}
-        ),
+        )
     }
 }
