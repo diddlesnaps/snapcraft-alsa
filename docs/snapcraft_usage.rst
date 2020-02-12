@@ -72,7 +72,23 @@ To use Ubuntu's ALSA, copy the following part into your
           - libasound2
           - libasound2-plugins
 
-Finally, add `after: [alsa-mixin]` to any parts that require ALSA, and add `snap/command-chain/alsa-launch` to the command chain of any apps that need to use the sound system e.g. `command-chain: ["snap/command-chain/alsa-launch"]` .
+Finally, add `after: [alsa-mixin]` to any parts that require ALSA, and add
+`snap/command-chain/alsa-launch` to the command chain of any apps that need
+to use the sound system e.g.
+
+.. code-block:: yaml
+
+    parts:
+      ... # other parts here
+
+      my-app:
+        after: [alsa-mixin]
+        ... # rest of my-app part here
+
+    apps:
+      my-app:
+        command-chain: ["snap/command-chain/alsa-launch"]
+        command: bin/my-app
 
 
 See also

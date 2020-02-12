@@ -57,7 +57,7 @@ Ideally you would choose a commit hash for the address or copy the
 file locally. To use a commit hash, try the following address,
 which is for the latest commit as of writing this document::
 
-    local alsa = import 'https://raw.githubusercontent.com/diddlesnaps/snapcraft-alsa/6402675/alsa.libsonnet';
+    local alsa = import 'https://raw.githubusercontent.com/diddlesnaps/snapcraft-alsa/bdfde06/alsa.libsonnet';
 
 
 See also
