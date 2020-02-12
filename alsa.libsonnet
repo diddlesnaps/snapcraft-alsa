@@ -102,7 +102,7 @@ elif [ -d \"\\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib\" ]; then
 fi
 export LD_LIBRARY_PATH=\"\\$LD_LIBRARY_PATH\\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio\"
 
-# Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
+# Make PulseAudio socket available inside the snap-specific \\$XDG_RUNTIME_DIR
 if [ -n \"\\$XDG_RUNTIME_DIR\" ]; then
     pulsenative=\"pulse/native\"
     pulseaudio_sockpath=\"\\$XDG_RUNTIME_DIR/../\\$pulsenative\"
