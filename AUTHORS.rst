@@ -2,4 +2,4 @@
 Contributors
 ============
 
-* Daniel Llewellyn <daniel@bowlhat.net>
+* Daniel Llewellyn <diddledan@ubuntu.com>
