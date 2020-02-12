@@ -6,7 +6,7 @@ Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    Using with sc-jsonnet <jsonnet_usage>
    Adding manually <snapcraft_usage>
