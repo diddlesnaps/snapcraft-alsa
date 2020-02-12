@@ -19,8 +19,7 @@ Howto
 
 To add snapcraft-alsa to your ``snapcraft.jsonnet`` file, simply
 add the import at the top of your jsonnet file and then run the
-``alsa.apply()`` function against your existing project
-definition::
+``alsa()`` function against your existing project definition::
 
     local snapcraft = import 'snapcraft.libsonnet';
     local alsa = import 'https://raw.githubusercontent.com/diddlesnaps/snapcraft-alsa/master/alsa.libsonnet';
@@ -33,7 +32,7 @@ definition::
                 plugin: "nil",
             },
         },
-    } + alsa.apply()
+    } + alsa()
 
 You can also supply a version number to build a specific version of
 alsa, which will download and compile the version of alsa that you
@@ -51,7 +50,7 @@ and ``libasound2-plugins`` from previously defined parts::
                 plugin: "nil",
             },
         },
-    } + alsa.apply("1.1.9")
+    } + alsa("1.1.9")
 
 Ideally you would choose a commit hash for the address or copy the
 file locally. To use a commit hash, try the following address,
