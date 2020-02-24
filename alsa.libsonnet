@@ -77,7 +77,7 @@ function(version="") {
     ), super.parts) + {
         "alsa-mixin": {
             plugin: "dump",
-            source: "https://github.com/diddledan/snapcraft-alsa.git",
+            source: "https://github.com/diddlesnaps/snapcraft-alsa.git",
             "source-subdir": "snapcraft-assets",
             "build-packages": (
                 if version == "" then ["libasound2-dev"]
