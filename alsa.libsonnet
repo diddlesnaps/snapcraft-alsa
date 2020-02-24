@@ -34,7 +34,7 @@ function(version="") {
                 if std.objectHas(app, 'plugs') then
                     app.plugs
                 else []
-            ), ["pulseaudio"])
+            ), ["audio-playback", "audio-record"])
         }
     ), apps),
 
@@ -76,53 +76,9 @@ function(version="") {
         }
     ), super.parts) + {
         "alsa-mixin": {
+            plugin: "dump",
             source: "https://github.com/diddledan/snapcraft-alsa.git",
-            plugin: "nil",
-            "override-pull": |||
-                set -eux
-                cat > asound.conf <<EOF
-                pcm.!default {
-                    type pulse
-                    fallback "sysdefault"
-                    hint {
-                        show on
-                        description "Default ALSA Output (currently PulseAudio Sound Server)"
-                    }
-                }
-                ctl.!default {
-                    type pulse
-                    fallback "sysdefault"
-                }
-                EOF
-                cat > alsa-launch <<EOF
-                #!/bin/bash
-                export ALSA_CONFIG_PATH="\$SNAP/etc/asound.conf"
-
-                if [ -d "\$SNAP/usr/lib/alsa-lib" ]; then
-                    export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SNAP/usr/lib/alsa-lib"
-                elif [ -d "\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib" ]; then
-                    export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib"
-                fi
-                export LD_LIBRARY_PATH="\$LD_LIBRARY_PATH:\$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio"
-
-                # Make PulseAudio socket available inside the snap-specific \$XDG_RUNTIME_DIR
-                if [ -n "\$XDG_RUNTIME_DIR" ]; then
-                    pulsenative="pulse/native"
-                    pulseaudio_sockpath="\$XDG_RUNTIME_DIR/../\$pulsenative"
-                    if [ -S "\$pulseaudio_sockpath" ]; then
-                        export PULSE_SERVER="unix:\${pulseaudio_sockpath}"
-                    fi
-                fi
-
-                exec "\$@"
-                EOF
-                chmod +x alsa-launch
-            |||,
-            "override-build": |||
-                set -eux
-                install -m644 -D -t "$SNAPCRAFT_PART_INSTALL/etc" asound.conf
-                install -m755 -D -t "$SNAPCRAFT_PART_INSTALL/snap/command-chain" alsa-launch
-            |||,
+            "source-subdir": "snapcraft-assets",
             "build-packages": (
                 if version == "" then ["libasound2-dev"]
                 else []
