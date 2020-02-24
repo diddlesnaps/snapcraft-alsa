@@ -16,7 +16,7 @@ Howto
 =====
 
 To use Ubuntu's ALSA, copy the following part into your
-`snapcraft.yaml`:
+``snapcraft.yaml``:
 
 .. literalinclude:: ../snapcraft.yaml
   :start-after: ### START parts
@@ -43,7 +43,8 @@ Now, add ``after: [alsa-mixin]`` to any parts that require ALSA:
         ... # rest of my-app part here
 
 Finally, add ``snap/command-chain/alsa-launch`` to the command chain of any
-apps that need to use the sound system e.g.
+apps that need to use the sound system and specify the ``audio-playback`` plug
+and, optionally, the ``audio-record`` plug e.g.
 
 .. literalinclude:: ../snapcraft.yaml
   :start-after: ### START apps
