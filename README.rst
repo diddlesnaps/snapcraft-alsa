@@ -1,6 +1,6 @@
-==================
-snapcraft-alsa-lib
-==================
+==============
+snapcraft-alsa
+==============
 
 ALSA for your snap package routing sound through Pulseaudio!
 

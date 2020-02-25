@@ -81,7 +81,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'snapcraft-alsa-lib'
+project = u'snapcraft-alsa'
 copyright = u'2019, Daniel Llewellyn'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -144,7 +144,7 @@ html_theme_options = {
     'sidebar_width': '300px',
     'page_width': '1200px',
     'github_user': 'diddlesnaps',
-    'github_repo': 'snapcraft-alsa-lib',
+    'github_repo': 'snapcraft-alsa',
     'github_button': 'false',
     'github_banner': 'true',
     'description': 'ALSA for your snap package routing sound through Pulseaudio!',
@@ -240,7 +240,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'user_guide.tex', u'snapcraft-alsa-lib Documentation',
+  ('index', 'user_guide.tex', u'snapcraft-alsa Documentation',
    u'Daniel Llewellyn', 'manual'),
 ]
 

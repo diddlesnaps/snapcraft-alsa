@@ -8,7 +8,7 @@ PAPER         =
 BUILDDIR      = ../build/sphinx/
 AUTODOCDIR    = api
 AUTODOCBUILD  = sphinx-apidoc
-PROJECT       = snapcraft-alsa-lib
+PROJECT       = snapcraft-alsa
 MODULEDIR     = ../src/snapcraft_alsa_lib
 
 # User-friendly check for sphinx-build
