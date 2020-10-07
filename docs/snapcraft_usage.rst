@@ -43,8 +43,9 @@ Now, add ``after: [alsa-mixin]`` to any parts that require ALSA:
         ... # rest of my-app part here
 
 Finally, add ``snap/command-chain/alsa-launch`` to the command chain of any
-apps that need to use the sound system and specify the ``audio-playback`` plug
-and, optionally, the ``audio-record`` plug e.g.
+apps that need to use the sound system and specify the ``alsa``,
+``audio-playback`` plug, and the ``audio-record`` plug if recording is
+required e.g.
 
 .. literalinclude:: ../snapcraft.yaml
   :start-after: ### START apps

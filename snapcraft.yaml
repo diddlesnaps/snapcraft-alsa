@@ -20,12 +20,15 @@ parts:
     stage-packages:
       - libasound2
       - libasound2-plugins
+      - yad
 ### END parts
 
 ### START layout
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib
+  /usr/share/alsa:
+    bind: $SNAP/usr/share/alsa
 ### END layout
 
 ### START apps
@@ -33,5 +36,5 @@ apps:
   my-app:
     command-chain: ["snap/command-chain/alsa-launch"]
     command: bin/my-app
-    plugs: [audio-playback, audio-record]
+    plugs: [alsa, audio-playback, audio-record]
 ### END apps

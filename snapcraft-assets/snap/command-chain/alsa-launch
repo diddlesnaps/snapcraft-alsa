@@ -1,33 +1,103 @@
-#!/bin/bash
+#!/bin/sh
 
-if [ "$SNAP_ARCH" == "amd64" ]; then
-  ALSA_ARCH_TRIPLET="x86_64-linux-gnu"
-elif [ "$SNAP_ARCH" == "armhf" ]; then
-  ALSA_ARCH_TRIPLET="arm-linux-gnueabihf"
-elif [ "$SNAP_ARCH" == "arm64" ]; then
-  ALSA_ARCH_TRIPLET="aarch64-linux-gnu"
-elif [ "$SNAP_ARCH" == "ppc64el" ]; then
-  ALSA_ARCH_TRIPLET="powerpc64le-linux-gnu"
+if [ -f "$SNAP/meta/gui/$SNAP_NAME.desktop" ]; then
+  SNAP_READABLE_NAME="$(awk 'BEGIN { FS="=" }; /^Name=/ { print $2 }' "$SNAP/meta/gui/$SNAP_NAME.desktop")"
 else
-  ALSA_ARCH_TRIPLET="$SNAP_ARCH-linux-gnu"
+  SNAP_READABLE_NAME="$SNAP_NAME"
 fi
 
-export ALSA_CONFIG_PATH="$SNAP/etc/asound.conf"
+popup() {
+  TEXT="$SNAP_READABLE_NAME requires access to the ALSA system.
 
-if [ -d "$SNAP/usr/lib/alsa-lib" ]; then
-    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/alsa-lib"
-elif [ -d "$SNAP/usr/lib/$ALSA_ARCH_TRIPLET/alsa-lib" ]; then
-    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/$ALSA_ARCH_TRIPLET/alsa-lib"
-fi
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/$ALSA_ARCH_TRIPLET/pulseaudio"
+You need grant the ALSA permission to the Snap Package by running the following
+command in a terminal, or use the Snap Store or Software Centre app to grant the
+permission.
 
-# Make PulseAudio socket available inside the snap-specific \$XDG_RUNTIME_DIR
-if [ -n "$XDG_RUNTIME_DIR" ]; then
+You can also try to use Pulseaudio instead but this may lead to strange issues.
+
+    $ sudo snap connect $SNAP_NAME:alsa
+"
+  if snapctl is-connected desktop; then
+    yad --center \
+        --title="$SNAP_READABLE_NAME cannot access ALSA" \
+        --text="$TEXT" \
+        --button="Retest":2 \
+        --button="Use PulseAudio":0 \
+        --button="Cancel":1
+    return $?
+  else
+    echo <<EOF
+$TEXT
+
+Type r to retest,
+Type p to Use PulseAudio instead, or
+Type c to Cancel (default):
+
+EOF
+    read -n 1 -p "retest|pulseaudio|[cancel]? " response
+    case response in
+      P|Pulseaudio|PulseAudio|p|pulseaudio)
+        return 0
+        ;;
+      R|Retest|r|retest)
+        return 2
+        ;;
+      *)
+        return 1
+        ;;
+    esac
+  fi
+}
+
+setup_alsa_override() {
+  if [ "$SNAP_ARCH" == "amd64" ]; then
+    ALSA_ARCH_TRIPLET="x86_64-linux-gnu"
+  elif [ "$SNAP_ARCH" == "armhf" ]; then
+    ALSA_ARCH_TRIPLET="arm-linux-gnueabihf"
+  elif [ "$SNAP_ARCH" == "arm64" ]; then
+    ALSA_ARCH_TRIPLET="aarch64-linux-gnu"
+  elif [ "$SNAP_ARCH" == "ppc64el" ]; then
+    ALSA_ARCH_TRIPLET="powerpc64le-linux-gnu"
+  else
+    ALSA_ARCH_TRIPLET="$SNAP_ARCH-linux-gnu"
+  fi
+
+  export ALSA_CONFIG_PATH="$SNAP/etc/asound.conf"
+
+  if [ -d "$SNAP/usr/lib/alsa-lib" ]; then
+      export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/alsa-lib"
+  elif [ -d "$SNAP/usr/lib/$ALSA_ARCH_TRIPLET/alsa-lib" ]; then
+      export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/$ALSA_ARCH_TRIPLET/alsa-lib"
+  fi
+  export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/$ALSA_ARCH_TRIPLET/pulseaudio"
+
+  # Make PulseAudio socket available inside the snap-specific $XDG_RUNTIME_DIR
+  if [ -n "$XDG_RUNTIME_DIR" ]; then
     pulsenative="pulse/native"
     pulseaudio_sockpath="$XDG_RUNTIME_DIR/../$pulsenative"
     if [ -S "$pulseaudio_sockpath" ]; then
-        export PULSE_SERVER="unix:${pulseaudio_sockpath}"
+      export PULSE_SERVER="unix:${pulseaudio_sockpath}"
     fi
+  fi
+}
+
+ret=2
+while [ $ret = 2 ] && ! snapctl is-connected alsa; do
+  popup
+  ret=$?
+  if [ $ret = 2 ]; then
+    echo "Retesting permissions..."
+  fi
+done
+
+if [ $ret = 1 ]; then
+  echo "Cancelling execution..."
+  exit 1
+fi
+
+if ! snapctl is-connected alsa; then
+  echo "Trying to use PulseAudio instead of ALSA..."
+  setup_alsa_override
 fi
 
 exec "$@"

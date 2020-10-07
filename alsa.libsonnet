@@ -74,7 +74,7 @@ function(version="") {
                 else []
             ), ["alsa-mixin"]),
         }
-    ), super.parts) + {
+    ), parts) + {
         "alsa-mixin": {
             plugin: "dump",
             source: "https://github.com/diddlesnaps/snapcraft-alsa.git",
@@ -86,7 +86,7 @@ function(version="") {
             "stage-packages": (
                 if version == "" then ["libasound2", "libasound2-plugins"]
                 else []
-            ),
+            ) + ["yad"],
             after: (
                 if version == "" then []
                 else ["alsa-lib-mixin", "alsa-plugins-mixin"]
