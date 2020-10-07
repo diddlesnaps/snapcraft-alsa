@@ -21,7 +21,11 @@ function(version="") {
                     bind: "$SNAP/usr/lib/alsa-lib"
                 },
             }
-    ),
+    ) + {
+        "/usr/share/alsa": {
+            bind: "$SNAP/usr/share/alsa"
+        },
+    },
 
     apps: std.mapWithKey(function(name, app) (
         app + {
