@@ -50,13 +50,13 @@ EOF
 }
 
 setup_alsa_override() {
-  if [ "$SNAP_ARCH" == "amd64" ]; then
+  if [ "$SNAP_ARCH" = "amd64" ]; then
     ALSA_ARCH_TRIPLET="x86_64-linux-gnu"
-  elif [ "$SNAP_ARCH" == "armhf" ]; then
+  elif [ "$SNAP_ARCH" = "armhf" ]; then
     ALSA_ARCH_TRIPLET="arm-linux-gnueabihf"
-  elif [ "$SNAP_ARCH" == "arm64" ]; then
+  elif [ "$SNAP_ARCH" = "arm64" ]; then
     ALSA_ARCH_TRIPLET="aarch64-linux-gnu"
-  elif [ "$SNAP_ARCH" == "ppc64el" ]; then
+  elif [ "$SNAP_ARCH" = "ppc64el" ]; then
     ALSA_ARCH_TRIPLET="powerpc64le-linux-gnu"
   else
     ALSA_ARCH_TRIPLET="$SNAP_ARCH-linux-gnu"
