@@ -25,7 +25,7 @@ You can also try to use Pulseaudio instead but this may lead to strange issues.
         --button="Use PulseAudio":0 \
         --button="Cancel":1
     return $?
-  else
+  elif [ $SHLVL -gt 1 ]; then
     echo <<EOF
 $TEXT
 
@@ -46,6 +46,8 @@ EOF
         return 1
         ;;
     esac
+  else
+    return 0
   fi
 }
 
@@ -81,21 +83,23 @@ setup_alsa_override() {
   fi
 }
 
-ret=2
-while [ $ret = 2 ] && ! snapctl is-connected alsa; do
-  popup
-  ret=$?
-  if [ $ret = 2 ]; then
-    echo "Retesting permissions..."
-  fi
-done
+if ! env LANG=C snapctl is-connected alsa 2>&1 | grep 'has no plug or slot named "alsa"' >/dev/null; then
+  ret=2
+  while [ $ret = 2 ] && ! snapctl is-connected alsa; do
+    popup
+    ret=$?
+    if [ $ret = 2 ]; then
+      echo "Retesting permissions..."
+    fi
+  done
 
-if [ $ret = 1 ]; then
-  echo "Cancelling execution..."
-  exit 1
+  if [ $ret = 1 ]; then
+    echo "Cancelling execution..."
+    exit 1
+  fi
 fi
 
-if ! snapctl is-connected alsa; then
+if ! snapctl is-connected alsa 2>/dev/null; then
   echo "Trying to use PulseAudio instead of ALSA..."
   setup_alsa_override
 fi
