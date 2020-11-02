@@ -21,29 +21,34 @@ You can also try to use Pulseaudio instead but this may lead to strange issues.
     yad --center \
         --title="$SNAP_READABLE_NAME cannot access ALSA" \
         --text="$TEXT" \
-        --button="Retest":2 \
-        --button="Use PulseAudio":0 \
-        --button="Cancel":1
+        --button="Retest":255 \
+        --button="Always Use PulseAudio":2
+        --button="Use PulseAudio This Time":1 \
+        --button="Cancel":0
     return $?
   elif [ $SHLVL -gt 1 ]; then
     echo <<EOF
 $TEXT
 
 Type r to retest,
-Type p to Use PulseAudio instead, or
+Type p to Use PulseAudio this time
+Type a to Always use PulseAudio, or
 Type c to Cancel (default):
 
 EOF
-    read -n 1 -p "retest|pulseaudio|[cancel]? " response
+    read -n 1 -p "retest|pulseaudio|always|[cancel]? " response
     case response in
-      P|Pulseaudio|PulseAudio|p|pulseaudio)
-        return 0
-        ;;
       R|Retest|r|retest)
+        return 255
+        ;;
+      A|Always|a|always)
         return 2
         ;;
-      *)
+      P|Pulseaudio|PulseAudio|p|pulseaudio)
         return 1
+        ;;
+      *)
+        return 0
         ;;
     esac
   else
@@ -83,25 +88,43 @@ setup_alsa_override() {
   fi
 }
 
-if ! env LANG=C snapctl is-connected alsa 2>&1 | grep 'has no plug or slot named "alsa"' >/dev/null; then
-  ret=2
-  while [ $ret = 2 ] && ! snapctl is-connected alsa; do
-    popup
-    ret=$?
-    if [ $ret = 2 ]; then
-      echo "Retesting permissions..."
-    fi
-  done
-
-  if [ $ret = 1 ]; then
-    echo "Cancelling execution..."
-    exit 1
-  fi
+if [ -f "$SNAP_USER_DATA/.snapcraft-alsa" ]; then
+  . "$SNAP_USER_DATA/.snapcraft-alsa"
 fi
 
-if ! snapctl is-connected alsa 2>/dev/null; then
-  echo "Trying to use PulseAudio instead of ALSA..."
+if [ -n "$ALWAYS_USE_PULSEAUDIO" ] && [ "$ALWAYS_USE_PULSEAUDIO" -eq 1 ]; then
+
+  echo "Routing ALSA through PulseAudio"
   setup_alsa_override
+
+else
+
+  if ! env LANG=C snapctl is-connected alsa 2>&1 | grep 'has no plug or slot named "alsa"' >/dev/null; then
+    ret=2
+    while [ $ret = 255 ] && ! snapctl is-connected alsa; do
+      popup
+      ret=$?
+      if [ $ret = 255 ]; then
+        echo "Retesting permissions..."
+      fi
+    done
+
+    case $ret in
+      1)
+        echo "Setting ALSA to always route through PulseAudio"
+        echo "ALWAYS_USE_PULSEAUDIO=1" > "$SNAP_USER_DATA/.snapcraft-alsa"
+        setup_alsa_override
+        ;;
+      2)
+        echo "Trying to route ALSA through PulseAudio..."
+        setup_alsa_override
+        ;;
+      *)
+        echo "Cancelling execution..."
+        exit 1
+        ;;
+    esac
+  fi
 fi
 
 exec "$@"
