@@ -1,11 +1,10 @@
-==============
 snapcraft-alsa
 ==============
 
 ALSA for your snap package routing sound through Pulseaudio!
 
 Description
-===========
+-----------
 
 This part will install ALSA and a snap configuration that will
 redirect audio through pulseaudio without requiring the `alsa`
