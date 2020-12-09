@@ -89,7 +89,10 @@ setup_alsa_override() {
 }
 
 if [ -f "$SNAP_USER_DATA/.snapcraft-alsa" ]; then
-  . "$SNAP_USER_DATA/.snapcraft-alsa"
+  mv "$SNAP_USER_DATA/.snapcraft-alsa" "$SNAP_USER_DATA/Always use PulseAudio"
+fi
+if [ -f "$SNAP_USER_DATA/Always use PulseAudio" ]; then
+  . "$SNAP_USER_DATA/Always use PulseAudio"
 fi
 
 if [ -n "$ALWAYS_USE_PULSEAUDIO" ] && [ "$ALWAYS_USE_PULSEAUDIO" -eq 1 ]; then
