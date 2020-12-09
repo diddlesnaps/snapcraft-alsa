@@ -7,44 +7,53 @@ else
 fi
 
 popup() {
-  TEXT="$SNAP_READABLE_NAME requires access to the ALSA system.
+  TEXT="$SNAP_READABLE_NAME may have improved audio quality if granted permission to access the ALSA audio system.
 
-You need grant the ALSA permission to the Snap Package by running the following
-command in a terminal, or use the Snap Store or Software Centre app to grant the
-permission.
+If you experience audio problems, you may wish to grant this access by using the Software Centre or the Snap Store to add the 'alsa' permission to $SNAP_READABLE_NAME. It is safe to continue without doing so.
 
-You can also try to use Pulseaudio instead but this may lead to strange issues.
+You can also grant this permission by running the following command in a Terminal window:
 
-    $ sudo snap connect $SNAP_NAME:alsa
+<tt>sudo snap connect $SNAP_NAME:alsa</tt>
+
+If you choose to continue and later wish to change your mind, you can remove the file <tt>$SNAP_USER_DATA/Always use PulseAudio</tt>.
 "
+PLAIN=$(sed 's/<[^>]*>//g' <<< $TEXT)
+PLAINWRAPPED=$(echo -e "$PLAIN" | fold -w 70 -s -)
+
   if snapctl is-connected desktop; then
     yad --center \
-        --title="$SNAP_READABLE_NAME cannot access ALSA" \
+        --title="Configuring $SNAP_READABLE_NAME audio system" \
         --text="$TEXT" \
-        --button="Retest":255 \
-        --button="Always Use PulseAudio":2
-        --button="Use PulseAudio This Time":1 \
-        --button="Cancel":0
+        --button="Permission has been granted":255 \
+        --button="Start and ask next time":1 \
+        --button="Start and don't ask again":2 \
+        --button=gtk-cancel:0 \
+        --borders=12 \
+        --image=audio-volume-high-symbolic \
+        --width=100
+
     return $?
   elif [ $SHLVL -gt 1 ]; then
-    echo <<EOF
-$TEXT
+    echo "$PLAINWRAPPED"
+    cat <<EOF
 
-Type r to retest,
-Type p to Use PulseAudio this time
-Type a to Always use PulseAudio, or
-Type c to Cancel (default):
+Type [p] to re-test after granting [p]ermission,
+     [s] to [s]tart and not ask again,
+     [a] to start and [a]sk again next time, or
+     [c] to [c]ancel (default)
 
 EOF
-    read -n 1 -p "retest|pulseaudio|always|[cancel]? " response
-    case response in
-      R|Retest|r|retest)
-        return 255
-        ;;
-      A|Always|a|always)
+
+    read -n 1 -p "permission | start | ask | [cancel] > " response
+
+    case $response in
+      S|Start|s|start)
         return 2
         ;;
-      P|Pulseaudio|PulseAudio|p|pulseaudio)
+      P|p|Permission|permission|R|r|Retest|retest)
+        return 255
+        ;;
+      A|Ask|a|ask)
         return 1
         ;;
       *)
@@ -102,8 +111,8 @@ if [ -n "$ALWAYS_USE_PULSEAUDIO" ] && [ "$ALWAYS_USE_PULSEAUDIO" -eq 1 ]; then
 
 else
 
-  if ! env LANG=C snapctl is-connected alsa 2>&1 | grep 'has no plug or slot named "alsa"' >/dev/null; then
-    ret=2
+  if ! env LANG=C snapctl is-connected alsa 2>&1 | grep -q 'has no plug or slot named "alsa"'; then
+    ret=255
     while [ $ret = 255 ] && ! snapctl is-connected alsa; do
       popup
       ret=$?
@@ -115,7 +124,7 @@ else
     case $ret in
       1)
         echo "Setting ALSA to always route through PulseAudio"
-        echo "ALWAYS_USE_PULSEAUDIO=1" > "$SNAP_USER_DATA/.snapcraft-alsa"
+        echo "ALWAYS_USE_PULSEAUDIO=1" > "$SNAP_USER_DATA/Always use PulseAudio"
         setup_alsa_override
         ;;
       2)
