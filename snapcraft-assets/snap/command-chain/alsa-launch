@@ -7,7 +7,7 @@ else
 fi
 
 popup() {
-  TEXT="$SNAP_READABLE_NAME may have improved audio quality if granted permission to access the ALSA audio system.
+  TEXT="$SNAP_READABLE_NAME may have better audio device support if granted permission to access the ALSA audio system.
 
 If you experience audio problems, you may wish to grant this access by using the Software Centre or the Snap Store to add the 'alsa' permission to $SNAP_READABLE_NAME. It is safe to continue without doing so.
 
