@@ -25,8 +25,8 @@ PLAINWRAPPED=$(echo -e "$PLAIN" | fold -w 70 -s -)
         --title="Configuring $SNAP_READABLE_NAME audio system" \
         --text="$TEXT" \
         --button="Permission has been granted":255 \
-        --button="Start and ask next time":1 \
-        --button="Start and don't ask again":2 \
+        --button="Start and ask next time":2 \
+        --button="Start and don't ask again":1 \
         --button=gtk-cancel:0 \
         --borders=12 \
         --image=audio-volume-high-symbolic \
@@ -47,11 +47,11 @@ EOF
     read -n 1 -p "permission | start | ask | [cancel] > " response
 
     case $response in
-      S|Start|s|start)
-        return 2
-        ;;
       P|p|Permission|permission|R|r|Retest|retest)
         return 255
+        ;;
+      S|Start|s|start)
+        return 2
         ;;
       A|Ask|a|ask)
         return 1
@@ -113,10 +113,10 @@ else
 
   if ! env LANG=C snapctl is-connected alsa 2>&1 | grep -q 'has no plug or slot named "alsa"'; then
     ret=255
-    while [ $ret = 255 ] && ! snapctl is-connected alsa; do
+    while [ $ret -eq 255 ] && ! snapctl is-connected alsa; do
       popup
       ret=$?
-      if [ $ret = 255 ]; then
+      if [ $ret -eq 255 ]; then
         echo "Retesting permissions..."
       fi
     done
