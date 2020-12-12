@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -f "$SNAP/meta/gui/$SNAP_NAME.desktop" ]; then
   SNAP_READABLE_NAME="$(awk 'BEGIN { FS="=" }; /^Name=/ { print $2 }' "$SNAP/meta/gui/$SNAP_NAME.desktop")"
