@@ -6,7 +6,8 @@ else
   SNAP_READABLE_NAME="$SNAP_NAME"
 fi
 
-USE_PA_FILE="$SNAP_USER_DATA/Always use PulseAudio"
+USE_PA_FILENAME="Always use PulseAudio"
+USE_PA_FILEPATH="$SNAP_USER_COMMON/$USE_PA_FILENAME"
 
 popup() {
   TEXT="$SNAP_READABLE_NAME may have better audio device support if granted permission to access the ALSA audio system.
@@ -18,7 +19,7 @@ You can also grant this permission by running the following command in a Termina
 <tt>sudo snap connect $SNAP_NAME:alsa</tt>
 
 If you choose to continue and later wish to change your mind, you can remove the file
-<tt>$USE_PA_FILE</tt>.
+<tt>$USE_PA_FILEPATH</tt>.
 "
 PLAIN=$(sed 's/<[^>]*>//g' <<< $TEXT)
 PLAINWRAPPED=$(echo -e "$PLAIN" | fold -w 70 -s -)
@@ -101,67 +102,68 @@ setup_alsa_override() {
 }
 
 if [ -f "$SNAP_USER_DATA/.snapcraft-alsa" ]; then
-  mv "$SNAP_USER_DATA/.snapcraft-alsa" "$USE_PA_FILE"
-fi
-if [ -f "$USE_PA_FILE" ]; then
-  . "$USE_PA_FILE"
+  mv "$SNAP_USER_DATA/.snapcraft-alsa" "$USE_PA_FILEPATH"
 fi
 
+if [ -f "$SNAP_USER_DATA/$USE_PA_FILENAME" ]; then
+  mv "$SNAP_USER_DATA/$USE_PA_FILENAME" "$USE_PA_FILEPATH"
+fi
 
-while true; do
-  echo "Testing for explicit PulseAudio choice..."
-  if [ -n "$ALWAYS_USE_PULSEAUDIO" ] && [ "$ALWAYS_USE_PULSEAUDIO" -eq 1 ]; then
-    echo "...and PulseAudio has been explicitly chosen, so using it."
-    setup_alsa_override
-    break
-  fi
+if [ -f "$USE_PA_FILEPATH" ]; then
+  . "$USE_PA_FILEPATH"
+fi
 
-  echo "Testing for ALSA permissions..."
-  is_alsa_output=$(env LANG=C snapctl is-connected alsa 2>&1)
-  is_alsa_ec=$?
-  echo "is_alsa_ec $is_alsa_ec"
-  echo "is_alsa_output $is_alsa_output"
-  if [ $is_alsa_ec == 0 ]; then
-    is_alsa=0
-  elif echo "$is_alsa_output" | grep -q 'has no plug or slot named "alsa"'; then
-    is_alsa=1
-  else
-    # some other error with snapcraft is-connected alsa
-    is_alsa=1
-    if [ ! -z "$is_alsa_output"]; then
-      echo "Warning: error when checking alsa permissions:"
-      echo $is_alsa_output
+echo "Testing for explicit PulseAudio choice..."
+if [ -n "$ALWAYS_USE_PULSEAUDIO" ] && [ "$ALWAYS_USE_PULSEAUDIO" -eq 1 ]; then
+  echo "...and PulseAudio has been explicitly chosen, so using it."
+  setup_alsa_override
+else
+  while true; do
+    echo "Testing for ALSA permissions..."
+    is_alsa_output=$(env LANG=C snapctl is-connected alsa 2>&1)
+    is_alsa_ec=$?
+
+    if [ -n "$SNAPCRAFT_ALSA_DEBUG" ]; then
+      echo "is_alsa_ec $is_alsa_ec"
+      echo "is_alsa_output $is_alsa_output"
     fi
-  fi
-  if [ $is_alsa == 0 ]; then
-    echo "...and using ALSA."
-    break
-  fi
 
-  # No ALSA permissions, and no explicit PulseAudio override, so ask
-  popup
-  ret=$?
+    if [ $is_alsa_ec == 0 ]; then
+      echo "...and using ALSA."
+      break
+    fi
 
-  case $ret in
-    0)
-      echo "...aborting."
-      exit 1
-      ;;
-    1)
-      echo "...use PulseAudio this time and ask next time."
-      setup_alsa_override
-      break 2
-      ;;
-    2)
-      echo "Setting ALSA to always route through PulseAudio"
-      echo "ALWAYS_USE_PULSEAUDIO=1" > "$USE_PA_FILE"
-      setup_alsa_override
-      break 2
-      ;;
-    255)
-      echo "...confirming that ALSA permissions have been granted."
-      ;;
-  esac
-done
+    if ! echo "$is_alsa_output" | grep -q 'has no plug or slot named "alsa"'; then
+      # some other error with snapctl is-connected alsa
+      if [ ! -z "$is_alsa_output"]; then
+        echo "Warning: error when checking alsa permissions:"
+        echo "$is_alsa_output"
+      fi
+    fi
+
+    # No ALSA permissions, and no explicit PulseAudio override, so ask
+    popup
+    case $? in
+      0)
+        echo "...aborting."
+        exit 1
+        ;;
+      1)
+        echo "...use PulseAudio this time and ask next time."
+        setup_alsa_override
+        break 2
+        ;;
+      2)
+        echo "Setting ALSA to always route through PulseAudio"
+        echo "ALWAYS_USE_PULSEAUDIO=1" > "$USE_PA_FILEPATH"
+        setup_alsa_override
+        break 2
+        ;;
+      255)
+        echo "...confirming that ALSA permissions have been granted."
+        ;;
+    esac
+  done
+fi
 
 exec "$@"
