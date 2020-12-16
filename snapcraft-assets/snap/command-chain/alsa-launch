@@ -6,6 +6,9 @@ else
   SNAP_READABLE_NAME="$SNAP_NAME"
 fi
 
+USE_PA_FILENAME="Always use PulseAudio"
+USE_PA_FILEPATH="$SNAP_USER_COMMON/$USE_PA_FILENAME"
+
 popup() {
   TEXT="$SNAP_READABLE_NAME may have better audio device support if granted permission to access the ALSA audio system.
 
@@ -15,7 +18,8 @@ You can also grant this permission by running the following command in a Termina
 
 <tt>sudo snap connect $SNAP_NAME:alsa</tt>
 
-If you choose to continue and later wish to change your mind, you can remove the file <tt>$SNAP_USER_DATA/Always use PulseAudio</tt>.
+If you choose to continue and later wish to change your mind, you can remove the file
+<tt>$USE_PA_FILEPATH</tt>.
 "
 PLAIN=$(sed 's/<[^>]*>//g' <<< $TEXT)
 PLAINWRAPPED=$(echo -e "$PLAIN" | fold -w 70 -s -)
@@ -25,8 +29,8 @@ PLAINWRAPPED=$(echo -e "$PLAIN" | fold -w 70 -s -)
         --title="Configuring $SNAP_READABLE_NAME audio system" \
         --text="$TEXT" \
         --button="Permission has been granted":255 \
-        --button="Start and ask next time":2 \
-        --button="Start and don't ask again":1 \
+        --button="Start and ask next time":1 \
+        --button="Start and don't ask again":2 \
         --button=gtk-cancel:0 \
         --borders=12 \
         --image=audio-volume-high-symbolic \
@@ -98,42 +102,68 @@ setup_alsa_override() {
 }
 
 if [ -f "$SNAP_USER_DATA/.snapcraft-alsa" ]; then
-  mv "$SNAP_USER_DATA/.snapcraft-alsa" "$SNAP_USER_DATA/Always use PulseAudio"
-fi
-if [ -f "$SNAP_USER_DATA/Always use PulseAudio" ]; then
-  . "$SNAP_USER_DATA/Always use PulseAudio"
+  mv "$SNAP_USER_DATA/.snapcraft-alsa" "$USE_PA_FILEPATH"
 fi
 
+if [ -f "$SNAP_USER_DATA/$USE_PA_FILENAME" ]; then
+  mv "$SNAP_USER_DATA/$USE_PA_FILENAME" "$USE_PA_FILEPATH"
+fi
+
+if [ -f "$USE_PA_FILEPATH" ]; then
+  . "$USE_PA_FILEPATH"
+fi
+
+echo "Testing for explicit PulseAudio choice..."
 if [ -n "$ALWAYS_USE_PULSEAUDIO" ] && [ "$ALWAYS_USE_PULSEAUDIO" -eq 1 ]; then
-
-  echo "Routing ALSA through PulseAudio"
+  echo "...and PulseAudio has been explicitly chosen, so using it."
   setup_alsa_override
+else
+  while true; do
+    echo "Testing for ALSA permissions..."
+    is_alsa_output=$(env LANG=C snapctl is-connected alsa 2>&1)
+    is_alsa_ec=$?
 
-elif ! env LANG=C snapctl is-connected alsa 2>&1 | grep -q 'has no plug or slot named "alsa"'; then
-  ret=255
-  while [ $ret -eq 255 ] && ! snapctl is-connected alsa; do
-    popup
-    ret=$?
-    if [ $ret -eq 255 ]; then
-      echo "Retesting permissions..."
+    if [ -n "$SNAPCRAFT_ALSA_DEBUG" ]; then
+      echo "is_alsa_ec $is_alsa_ec"
+      echo "is_alsa_output $is_alsa_output"
     fi
-  done
 
-  case $ret in
-    1)
-      echo "Setting ALSA to always route through PulseAudio"
-      echo "ALWAYS_USE_PULSEAUDIO=1" > "$SNAP_USER_DATA/Always use PulseAudio"
-      setup_alsa_override
-      ;;
-    2)
-      echo "Trying to route ALSA through PulseAudio..."
-      setup_alsa_override
-      ;;
-    *)
-      echo "Cancelling execution..."
-      exit 1
-      ;;
-  esac
+    if [ $is_alsa_ec == 0 ]; then
+      echo "...and using ALSA."
+      break
+    fi
+
+    if ! echo "$is_alsa_output" | grep -q 'has no plug or slot named "alsa"'; then
+      # some other error with snapctl is-connected alsa
+      if [ ! -z "$is_alsa_output"]; then
+        echo "Warning: error when checking alsa permissions:"
+        echo "$is_alsa_output"
+      fi
+    fi
+
+    # No ALSA permissions, and no explicit PulseAudio override, so ask
+    popup
+    case $? in
+      0)
+        echo "...aborting."
+        exit 1
+        ;;
+      1)
+        echo "...use PulseAudio this time and ask next time."
+        setup_alsa_override
+        break 2
+        ;;
+      2)
+        echo "Setting ALSA to always route through PulseAudio"
+        echo "ALWAYS_USE_PULSEAUDIO=1" > "$USE_PA_FILEPATH"
+        setup_alsa_override
+        break 2
+        ;;
+      255)
+        echo "...confirming that ALSA permissions have been granted."
+        ;;
+    esac
+  done
 fi
 
 exec "$@"
