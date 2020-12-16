@@ -52,6 +52,17 @@ required e.g.
   :end-before: ### END apps
   :language: yaml
 
+Always forcing PulseAudio
+=========================
+
+If you want your users to never be prompted and to always force the use of
+PulseAudio, you may specify an environment block in your ``snapcraft.yaml``:
+
+.. code-block:: yaml
+
+    environment:
+      ALWAYS_USE_PULSEAUDIO: '1'
+
 See also
 ========
 
