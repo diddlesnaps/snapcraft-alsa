@@ -139,6 +139,8 @@ else
         echo "Warning: error when checking alsa permissions:"
         echo "$is_alsa_output"
       fi
+      setup_alsa_override
+      break;
     fi
 
     # No ALSA permissions, and no explicit PulseAudio override, so ask
