@@ -24,7 +24,7 @@ If you choose to continue and later wish to change your mind, you can remove the
 PLAIN=$(sed 's/<[^>]*>//g' <<< $TEXT)
 PLAINWRAPPED=$(echo -e "$PLAIN" | fold -w 70 -s -)
 
-  if command yad &>/dev/null && snapctl is-connected desktop &>/dev/null; then
+  if command -v yad &>/dev/null && snapctl is-connected desktop &>/dev/null; then
     yad --center \
         --title="Configuring $SNAP_READABLE_NAME audio system" \
         --text="$TEXT" \
