@@ -94,7 +94,25 @@ function(version="") {
             after: (
                 if version == "" then []
                 else ["alsa-lib-mixin", "alsa-plugins-mixin"]
-            )
+            ),
+            stage: (
+                if version == "" then [
+                    "etc/asound.conf",
+                    "snap/command-chain/alsa-launch",
+                    "usr/bin/yad*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/alsa-lib",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libasound*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libdnsfile*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libFLAC*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libjack*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libpulse*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libsamplerate*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libspeex*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libvorbis*",
+                    "usr/lib/$SNAPCRAFT_ARCH_TRIPLET/pulseaudio",
+                ]
+                else []
+            ),
         },
     } + (
         if version == "" then {}
