@@ -132,16 +132,18 @@ else
       echo "...and using ALSA."
       break
     fi
-
-    if ! echo "$is_alsa_output" | grep -q 'has no plug or slot named "alsa"'; then
-      # some other error with snapctl is-connected alsa
-      if [ ! -z "$is_alsa_output"]; then
-        echo "Warning: error when checking alsa permissions:"
-        echo "$is_alsa_output"
-      fi
+    
+    if echo "$is_alsa_output" | grep -q 'has no plug or slot named "alsa"'; then
+      # no alsa plug defined
       echo "...defaulting to using PulseAudio."
       setup_alsa_override
       break
+    fi
+
+    if [ ! -z "$is_alsa_output"]; then
+      # some other error with snapctl is-connected alsa
+      echo "Warning: error when checking alsa permissions:"
+      echo "$is_alsa_output"
     fi
 
     # No ALSA permissions, and no explicit PulseAudio override, so ask
