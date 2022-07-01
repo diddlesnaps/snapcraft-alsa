@@ -82,7 +82,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'snapcraft-alsa'
-copyright = u'2019, Daniel Llewellyn'
+copyright = u'2019, Dani Llewellyn'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -241,7 +241,7 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'user_guide.tex', u'snapcraft-alsa Documentation',
-   u'Daniel Llewellyn', 'manual'),
+   u'Dani Llewellyn', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
